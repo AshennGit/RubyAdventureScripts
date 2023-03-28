@@ -6,35 +6,38 @@ using UnityEngine;
 
 public class RubyControl : MonoBehaviour
 {
-    //¸ÕÌå¶ÔÏó
+    //åˆšä½“å¯¹è±¡
     private  new Rigidbody2D rigidbody;
-    private Animator animator;//¶¯»­×é¼ş
+    private Animator animator;//åŠ¨ç”»ç»„ä»¶
     private Vector2 lookDirection = new Vector2(1, 0);
-    //»ñÈ¡ÓÃ»§ÊäÈë
+    //è·å–ç”¨æˆ·è¾“å…¥
     float horizontal;
     float vertical;
     
-    //ËÙ¶È
+    //é€Ÿåº¦
     private float speed = 5.0f;
 
-    //ÑªÁ¿
+    //è¡€é‡
     public float maxHealth = 10.0f;
     public float health
-    {//ÉèÖÃ¿É·ÃÎÊĞÔ
+    {//è®¾ç½®å¯è®¿é—®æ€§
         get { return currentHealth; }
-        //½ÇÉ«µ±Ç°ÑªÁ¿ÉèÖÃÎª²»¿ÉÔÚÍâ²¿ÉèÖÃ Ö»ÄÜÍ¨¹ıµ±Ç°ÀàµÄchangeHealth·½·¨½øĞĞĞŞ¸Ä
+        //è§’è‰²å½“å‰è¡€é‡è®¾ç½®ä¸ºä¸å¯åœ¨å¤–éƒ¨è®¾ç½® åªèƒ½é€šè¿‡å½“å‰ç±»çš„changeHealthæ–¹æ³•è¿›è¡Œä¿®æ”¹
         //set { currentHealth = value; }
     }
     private float currentHealth=1.0f;
 
-    //ÎŞµĞÊ±¼ä¼ÆÊ±Æ÷
-    public float timeinvincible=1.0f;//ÎŞµĞÊ±¼ä
-    private float invincibleTimer;//¼ÆÊıÆ÷
+    //æ— æ•Œæ—¶é—´è®¡æ—¶å™¨
+    public float timeinvincible=1.0f;//æ— æ•Œæ—¶é—´
+    private float invincibleTimer;//è®¡æ•°å™¨
     private bool isinvincible;
+
+    //å­˜å‚¨é£å¼¹çš„å…¬å…±å˜é‡
+    public GameObject Cogbullet;
     private void Start()
     {
-        //QualitySettings.vSyncCount= 0;//ÉèÖÃ´¹Ö±Í¬²½
-        //Application.targetFrameRate= 60;//ËøÖ¡
+        //QualitySettings.vSyncCount= 0;//è®¾ç½®å‚ç›´åŒæ­¥
+        //Application.targetFrameRate= 60;//é”å¸§
         rigidbody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         currentHealth= maxHealth;
@@ -48,38 +51,42 @@ public class RubyControl : MonoBehaviour
         vertical = Input.GetAxis("Vertical");
 
         Vector2 move = new Vector2(horizontal, vertical);
-        if (!Mathf.Approximately(move.x, 0.0f) || !Mathf.Approximately(move.y, 0.0f)) { //±È½ÏÊÇ·ñÒÆ¶¯
+        if (!Mathf.Approximately(move.x, 0.0f) || !Mathf.Approximately(move.y, 0.0f)) { //æ¯”è¾ƒæ˜¯å¦ç§»åŠ¨
             lookDirection.Set(move.x, move.y);
-            lookDirection.Normalize();//¹éÒ»»¯,Ö»ĞèÒª·½ÏòĞÅÏ¢
+            lookDirection.Normalize();//å½’ä¸€åŒ–,åªéœ€è¦æ–¹å‘ä¿¡æ¯
         }
 
         animator.SetFloat("Look X", lookDirection.x);
         animator.SetFloat("Look Y", lookDirection.y);
         animator.SetFloat("Speed", move.magnitude);
-
+        //å¦‚æœè§’è‰²è¿˜åœ¨æ— æ•Œæ—¶é—´
         if (isinvincible==true)
         {
-             invincibleTimer-=Time.deltaTime;//Ã¿Ö¡¶¼¼õÈ¥µ¥Î»Ö¡ÊıµÄÊ±¼ä
+             invincibleTimer-=Time.deltaTime;//æ¯å¸§éƒ½å‡å»å•ä½å¸§æ•°çš„æ—¶é—´
             if (invincibleTimer <= 0) { 
                 isinvincible=false;
             }
         }
+        //ç©å®¶æŒ‰æŒ‰é”®å‘å°„
+        if (Input.GetKeyDown(KeyCode.F)) {
+            Luanch();
+        }
     }
 
-    //È¥³ıÅö×²bug
+    //å»é™¤ç¢°æ’bug
     private void FixedUpdate()
     {
         if (rigidbody != null)
         {
             Vector2 position = rigidbody.position;
-            //Time.deltaTime ÎªÃ¿Ö¡µÄÊ±¼ä¼ä¸ô s/fps
+            //Time.deltaTime ä¸ºæ¯å¸§çš„æ—¶é—´é—´éš” s/fps
             position.x = position.x + speed * horizontal *Time.deltaTime;
             position.y = position.y + speed * vertical * Time.deltaTime;
-
+            
             rigidbody.MovePosition(position);
         }
     }
-    //¿ØÖÆÑªÁ¿º¯Êı
+    //æ§åˆ¶è¡€é‡å‡½æ•°
     public void ChangeHealth(float amount) {
         if (amount < 0)
         {
@@ -92,12 +99,21 @@ public class RubyControl : MonoBehaviour
             {
                 currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
                 isinvincible = true;
-                invincibleTimer = timeinvincible;//ÖØÖÃÎŞµĞÊ±¼ä
+                invincibleTimer = timeinvincible;//é‡ç½®æ— æ•Œæ—¶é—´
             }
         }
         else {
             currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
         }
-        Debug.Log($"µ±Ç°ÑªÁ¿{currentHealth}/{maxHealth}");
+        Debug.Log($"å½“å‰è¡€é‡{currentHealth}/{maxHealth}");
+    }
+
+    //å‘å°„é£å¼¹å‡½æ•°
+    void Luanch() {
+        GameObject projectileObject = Instantiate(Cogbullet, rigidbody.position + Vector2.up * 0.5f, Quaternion.identity);
+        
+        Projectile projectile = projectileObject.GetComponent<Projectile>();
+        projectile.Launch(lookDirection, 300);
+        animator.SetTrigger("Launch");
     }
 }
